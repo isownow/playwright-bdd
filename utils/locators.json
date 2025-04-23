@@ -1,0 +1,8 @@
+{
+    "ProductsPage": {
+        "item": "inventory-item",
+        "itemName": "inventory-item-name",
+        "itemPrice": "inventory-item-price",
+        "sortSelector": "product-sort-container"
+    }
+}
