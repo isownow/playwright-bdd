@@ -1,8 +1,43 @@
 {
     "ProductsPage": {
-        "item": "inventory-item",
-        "itemName": "inventory-item-name",
-        "itemPrice": "inventory-item-price",
-        "sortSelector": "product-sort-container"
+        "productTID": "inventory-item",
+        "productNameTID": "inventory-item-name",
+        "productPriceTID": "inventory-item-price",
+        "sortSelector": {
+            "selectorTID": "product-sort-container",
+            "lowToHigh": "lohi",
+            "highToLow": "hilo",
+            "aToZ": "az",
+            "zToA": "za"
+        },
+        "shoppingCartTID": "shopping-cart-link",
+        "shoppingCartBadgeTID": "shopping-cart-badge",
+        "openMenuButtonID": "#react-burger-menu-btn",
+        "openMenuWrapperClass": ".bm-menu-wrap",
+        "menuVisibilityAttribute": "aria-hidden",
+        "openMenuIconName": "Open Menu",
+        "closeMenuIconName": "Close Menu"
+    },
+
+    "CartPage": {
+        "nextPageButtonName": "Checkout"
+    },
+
+    "CheckoutFillInfoPage": {
+        "name1": "First Name",
+        "name2": "Last Name",
+        "pinCodePH": "Zip/Postal Code",
+        "nextPageButtonName": "Continue"
+    },
+
+    "CheckoutOverviewPage": {
+        "subtotalTID": "subtotal-label",
+        "taxITD": "tax-label",
+        "totalTID": "total-label",
+        "nextPageButtonName": "Finish"
+    },
+
+    "OrderPlacedPage": {
+        "nextPageButtonName": "Back Home"
     }
 }
