@@ -6,6 +6,7 @@ import {
     verifyHighToLow,
     verifyLowToHigh,
 } from "../utils/helpers";
+import * as locators from "../utils/locators.json";
 import { LoginPage } from "../page-objects/LoginPage";
 
 test.describe("Verify sorting order of items", () => {
@@ -18,7 +19,7 @@ test.describe("Verify sorting order of items", () => {
         await login.performLogin();
     });
 
-    test("@Positive: Verify the sorting order displayed for A-Z on the 'All Items' page", async () => {
+    test("@Positive Verify the sorting order displayed for A-Z on the 'All Items' page", async () => {
         // Get all product names
         const itemNames = await prodPage.getAllProductNames();
 
@@ -26,9 +27,11 @@ test.describe("Verify sorting order of items", () => {
         expect(verifyAZOrder(itemNames)).toBeTruthy();
     });
 
-    test("@Positive: Verify the sorting order displayed for Z-A on the 'All Items' page", async () => {
+    test("@Positive Verify the sorting order displayed for Z-A on the 'All Items' page", async () => {
         // Select the Z-A filter option
-        await prodPage.selectSortOption("za");
+        await prodPage.selectSortOption(
+            locators.ProductsPage.sortSelector.zToA,
+        );
 
         // Get all product names
         const itemNames = await prodPage.getAllProductNames();
@@ -37,9 +40,11 @@ test.describe("Verify sorting order of items", () => {
         expect(verifyZAOrder(itemNames)).toBeTruthy();
     });
 
-    test("@Positive: Verify the price order (low-high) displayed on the 'All Items' page", async () => {
-        // Select the Price (high to low) option
-        await prodPage.selectSortOption("lohi");
+    test("@Positive Verify the price order (low-high) displayed on the 'All Items' page", async () => {
+        // Select the Price (low to high) option
+        await prodPage.selectSortOption(
+            locators.ProductsPage.sortSelector.lowToHigh,
+        );
 
         // Get all product prices
         const itemPrices = await prodPage.getAllProductPrices();
@@ -48,9 +53,11 @@ test.describe("Verify sorting order of items", () => {
         expect(verifyLowToHigh(itemPrices)).toBeTruthy();
     });
 
-    test("@Positive: Verify the price order (high-low) displayed on the 'All Items' page", async () => {
+    test("@Positive Verify the price order (high-low) displayed on the 'All Items' page", async () => {
         // Select the Price (high to low) option
-        await prodPage.selectSortOption("hilo");
+        await prodPage.selectSortOption(
+            locators.ProductsPage.sortSelector.highToLow,
+        );
 
         // Get all product prices
         const itemPrices = await prodPage.getAllProductPrices();
