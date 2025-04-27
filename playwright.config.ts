@@ -26,6 +26,7 @@ export default defineConfig({
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */
+        /* ‼️NOTE: Add forward slash at the end of the URL‼️*/
         baseURL: "https://www.saucedemo.com/",
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
@@ -33,6 +34,11 @@ export default defineConfig({
         testIdAttribute: "data-test",
     },
 
+    snapshotDir: "./tests/snapshots",
+    timeout: 30 * 1000,
+    expect: {
+        timeout: 10 * 1000,
+    },
     /* Configure projects for major browsers */
     projects: [
         {
