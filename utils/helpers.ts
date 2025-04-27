@@ -27,3 +27,14 @@ export const verifyHighToLow = (itemPrices: string[]): boolean =>
         itemPrices
             .map((price) => parseFloat(price.replace("$", ""))) // Convert original to numeric
             .join();
+
+export const calculateTotal = (prices: string[]): number =>
+    prices
+        .map((price) => parseFloat(price.replace("$", ""))) // Convert original to numeric
+        .reduce((sum, price) => sum + price, 0); // Sum up all prices
+
+export const calculateTax = (price: number, taxPercentage: number): number =>
+    (price * taxPercentage) / 100;
+
+export const roundToDecimals = (num: number): number =>
+    Math.round(num * 100) / 100;
