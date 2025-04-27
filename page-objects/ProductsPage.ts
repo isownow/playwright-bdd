@@ -1,5 +1,6 @@
 import { Page } from "@playwright/test";
 import * as locators from "../utils/locators.json";
+import AxeBuilder from "@axe-core/playwright";
 
 export class ProductsPage {
     readonly page: Page;
@@ -9,42 +10,88 @@ export class ProductsPage {
     }
 
     async getAllProductNames() {
-        const itemNames: string[] = [];
-        const allItemsLocator = this.page.getByTestId(
-            locators.ProductsPage.item,
+        const productNames: string[] = [];
+        const allProductsLocator = this.page.getByTestId(
+            locators.ProductsPage.productTID,
         );
 
-        for (const item of await allItemsLocator.all()) {
-            const itemName = await item
-                .getByTestId(locators.ProductsPage.itemName)
+        for (const product of await allProductsLocator.all()) {
+            const productName = await product
+                .getByTestId(locators.ProductsPage.productNameTID)
                 .textContent();
-            if (itemName !== null) {
-                itemNames.push(itemName);
+            if (productName !== null) {
+                productNames.push(productName);
             }
         }
-        return itemNames;
+        return productNames;
     }
 
     async selectSortOption(option: string) {
         await this.page
-            .getByTestId(locators.ProductsPage.sortSelector)
+            .getByTestId(locators.ProductsPage.sortSelector.selectorTID)
             .selectOption(option);
     }
 
     async getAllProductPrices() {
-        const itemPrices: string[] = [];
-        const allItemsLocator = this.page.getByTestId(
-            locators.ProductsPage.item,
+        const productPrices: string[] = [];
+        const allProductsLocator = this.page.getByTestId(
+            locators.ProductsPage.productTID,
         );
 
-        for (const item of await allItemsLocator.all()) {
-            const itemPrice = await item
-                .getByTestId(locators.ProductsPage.itemPrice)
+        for (const product of await allProductsLocator.all()) {
+            const productPrice = await product
+                .getByTestId(locators.ProductsPage.productPriceTID)
                 .textContent();
-            if (itemPrice !== null) {
-                itemPrices.push(itemPrice);
+            if (productPrice !== null) {
+                productPrices.push(productPrice);
             }
         }
-        return itemPrices;
+        return productPrices;
+    }
+
+    async getProductPrices(products: string[]) {
+        const productPrices: string[] = [];
+        for (const product of products) {
+            const price = await this.page
+                .getByTestId(locators.ProductsPage.productTID)
+                .filter({
+                    has: this.page
+                        .getByTestId(locators.ProductsPage.productNameTID)
+                        .filter({ hasText: product }),
+                })
+                .getByTestId(locators.ProductsPage.productPriceTID)
+                .textContent();
+            if (price !== null) productPrices.push(price);
+            else throw new Error(`Product price not found!`);
+        }
+        return productPrices;
+    }
+
+    async addProductsToCart(products: string[]) {
+        for (const product of products) {
+            await this.page
+                .getByTestId(locators.ProductsPage.productTID)
+                .filter({
+                    has: this.page
+                        .getByTestId(locators.ProductsPage.productNameTID)
+                        .filter({ hasText: product }),
+                })
+                .getByRole("button")
+                .click();
+        }
+    }
+
+    async getCursorStyle(selector: string) {
+        const cursor = await this.page.$eval(selector, (element) => {
+            return window.getComputedStyle(element).cursor;
+        });
+
+        return cursor;
+    }
+
+    async doAccessibilityScan() {
+        return await new AxeBuilder({ page: this.page })
+            .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+            .analyze();
     }
 }
