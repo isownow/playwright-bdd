@@ -30,13 +30,13 @@ npx playwright install
 ```
 
 ## Execute Tests
-### The following command will run the tests on all the browsers (Chromium, Firefox, Webkit):
+#### The following command will run the tests on all the browsers (Chromium, Firefox, Webkit):
 ```
 
 npx playwright test
 
 ```
-### To run the tests on any specific browser, mention the browser name as follows:
+#### To run the tests on any specific browser, mention the browser name as follows:
 ```
 
 npx playwright test --project=chromium
