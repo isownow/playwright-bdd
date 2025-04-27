@@ -5,7 +5,7 @@
 
 import test, { expect, Page } from "@playwright/test";
 import { LoginPage } from "../page-objects/LoginPage";
-import { ProductsPage } from "../page-objects/ProductsPage";
+import { InventoryPage } from "../page-objects/InventoryPage";
 import { CommonFunctions } from "../page-objects/CommonFunctions";
 import * as userInfo from "../data/user-info.json";
 import * as urlPaths from "../configs/url-paths.json";
@@ -20,7 +20,7 @@ test.describe("Checkout Process", () => {
     test.describe.configure({ mode: "serial" });
 
     let page: Page;
-    let prodPage: ProductsPage;
+    let inventory: InventoryPage;
     let commonFunc: CommonFunctions;
     let url: string | undefined;
     let sumOfPrices: number;
@@ -38,7 +38,7 @@ test.describe("Checkout Process", () => {
         page = await context.newPage();
         url = baseURL;
 
-        prodPage = new ProductsPage(page);
+        inventory = new InventoryPage(page);
         commonFunc = new CommonFunctions(page);
         const login = new LoginPage(page, baseURL);
 
@@ -54,7 +54,7 @@ test.describe("Checkout Process", () => {
         await expect(page).toHaveURL(`${url}${urlPaths.productsPage}`);
 
         // Adding products to the cart
-        await prodPage.addProductsToCart(products);
+        await inventory.addProductsToCart(products);
 
         // Check whether the cart badge is visible
         expect(
@@ -75,7 +75,7 @@ test.describe("Checkout Process", () => {
         await expect(page).toHaveURL(`${url}${urlPaths.cartPage}`);
 
         // Validate whether the products present are as expected
-        expect(await prodPage.getAllProductNames()).toEqual(products);
+        expect(await inventory.getAllProductNames()).toEqual(products);
     });
 
     test("Checkout and add personal information", async () => {
@@ -111,12 +111,12 @@ test.describe("Checkout Process", () => {
         await expect(page).toHaveURL(`${url}${urlPaths.checkoutOverviewPage}`);
 
         // Validate whether the products present are as expected
-        expect(await prodPage.getAllProductNames()).toEqual(products);
+        expect(await inventory.getAllProductNames()).toEqual(products);
     });
 
     test("Verify subtotal on the overview page", async () => {
         // Get prices of all the products present on the page
-        const prices = await prodPage.getProductPrices(products);
+        const prices = await inventory.getProductPrices(products);
 
         sumOfPrices = roundToDecimals(calculateTotal(prices));
         const gotSubtotal = await page

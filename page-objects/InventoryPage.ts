@@ -2,7 +2,7 @@ import { Page } from "@playwright/test";
 import * as locators from "../utils/locators.json";
 import AxeBuilder from "@axe-core/playwright";
 
-export class ProductsPage {
+export class InventoryPage {
     readonly page: Page;
 
     constructor(page: Page) {
