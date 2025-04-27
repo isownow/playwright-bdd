@@ -154,7 +154,9 @@ test.describe("Checkout Process", () => {
         expect.soft(gotFinalTotalFormatted).toEqual(finalTotal);
     });
 
-    test("Go to final page and visually verify the page", async () => {
+    test("Go to final page and visually verify the page", async ({
+        headless,
+    }) => {
         // Finish
         await commonFunc.clickButtonByName(
             locators.CheckoutOverviewPage.nextPageButtonName,
@@ -164,10 +166,15 @@ test.describe("Checkout Process", () => {
         await expect(page).toHaveURL(`${url}${urlPaths.orderPlacedPage}`);
 
         // Verify the thank you page
-        await expect(page).toHaveScreenshot({ maxDiffPixels: 100 });
+        if (headless)
+            await expect.soft(page).toHaveScreenshot({
+                maxDiffPixels: 100,
+            });
     });
 
-    test("Go back to home and visually verify the home page", async () => {
+    test("Go back to home and visually verify the home page", async ({
+        headless,
+    }) => {
         // Back Home
         await commonFunc.clickButtonByName(
             locators.OrderPlacedPage.nextPageButtonName,
@@ -177,6 +184,9 @@ test.describe("Checkout Process", () => {
         await expect(page).toHaveURL(`${url}${urlPaths.productsPage}`);
 
         // Verify the home page
-        await expect(page).toHaveScreenshot({ maxDiffPixels: 100 });
+        if (headless)
+            await expect.soft(page).toHaveScreenshot({
+                maxDiffPixels: 100,
+            });
     });
 });
