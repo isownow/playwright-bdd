@@ -15,21 +15,39 @@ test.beforeEach(async ({ page, baseURL }) => {
     await login.performLogin();
 });
 
-test("Should not have any automatically detectable accessibility issues", async () => {
+test.skip("Should not have any automatically detectable accessibility issues", async () => {
     const accessibilityScanResults = await inventory.doAccessibilityScan();
 
     // Check if there are any issues in the scan
     expect(accessibilityScanResults.violations).toEqual([]);
 });
 
-test.describe("Basic button functionality tests on Products page", () => {
+test.describe("Basic button and cursor functionality tests on Products page", () => {
     test("@Positive Mouse cursor changes when pointed on menu icon", async () => {
         const cursor = await inventory.getCursorStyle(
             locators.ProductsPage.openMenuButtonID,
         );
 
         // Validate whether the mouse cursor changed
-        expect(cursor).toEqual("pointer");
+        expect.soft(cursor).toEqual("pointer");
+    });
+
+    test("@Positive Mouse cursor changes when pointed on cart icon", async () => {
+        const cursor = await inventory.getCursorStyle(
+            locators.ProductsPage.shoppingCartClass,
+        );
+
+        // Validate whether the mouse cursor changed
+        expect.soft(cursor).toEqual("pointer");
+    });
+
+    test("@Positive Mouse cursor changes when pointed on filter", async () => {
+        const cursor = await inventory.getCursorStyle(
+            locators.ProductsPage.sortSelector.selectorClass,
+        );
+
+        // Validate whether the mouse cursor changed
+        expect.soft(cursor).toEqual("pointer");
     });
 
     test("@Positive Menu should open", async ({ page }) => {

@@ -4,6 +4,7 @@
         "productNameTID": "inventory-item-name",
         "productPriceTID": "inventory-item-price",
         "sortSelector": {
+            "selectorClass": ".product_sort_container",
             "selectorTID": "product-sort-container",
             "lowToHigh": "lohi",
             "highToLow": "hilo",
@@ -11,6 +12,7 @@
             "zToA": "za"
         },
         "shoppingCartTID": "shopping-cart-link",
+        "shoppingCartClass": ".shopping_cart_link",
         "shoppingCartBadgeTID": "shopping-cart-badge",
         "openMenuButtonID": "#react-burger-menu-btn",
         "openMenuWrapperClass": ".bm-menu-wrap",
