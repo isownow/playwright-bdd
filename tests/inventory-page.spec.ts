@@ -24,7 +24,7 @@ test.skip("Should not have any automatically detectable accessibility issues", a
 
 test.describe("Basic button and cursor functionality tests on Products page", () => {
     test("@Positive Mouse cursor changes when pointed on menu icon", async () => {
-        const cursor = await inventory.getCursorStyle(
+        const cursor = await commonFunc.getCursorStyle(
             locators.ProductsPage.openMenuButtonID,
         );
 
@@ -33,7 +33,7 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
     });
 
     test("@Positive Mouse cursor changes when pointed on cart icon", async () => {
-        const cursor = await inventory.getCursorStyle(
+        const cursor = await commonFunc.getCursorStyle(
             locators.ProductsPage.shoppingCartClass,
         );
 
@@ -42,7 +42,7 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
     });
 
     test("@Positive Mouse cursor changes when pointed on filter", async () => {
-        const cursor = await inventory.getCursorStyle(
+        const cursor = await commonFunc.getCursorStyle(
             locators.ProductsPage.sortSelector.selectorClass,
         );
 

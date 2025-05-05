@@ -15,5 +15,13 @@ export class CommonFunctions {
             .click();
     }
 
+    async getCursorStyle(selector: string) {
+        const cursor = await this.page.$eval(selector, (element) => {
+            return window.getComputedStyle(element).cursor;
+        });
+
+        return cursor;
+    }
+
     /* More common functions to be added */
 }

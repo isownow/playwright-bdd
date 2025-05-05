@@ -81,14 +81,6 @@ export class InventoryPage {
         }
     }
 
-    async getCursorStyle(selector: string) {
-        const cursor = await this.page.$eval(selector, (element) => {
-            return window.getComputedStyle(element).cursor;
-        });
-
-        return cursor;
-    }
-
     async doAccessibilityScan() {
         return await new AxeBuilder({ page: this.page })
             .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
