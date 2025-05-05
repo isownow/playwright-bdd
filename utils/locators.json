@@ -18,7 +18,10 @@
         "openMenuWrapperClass": ".bm-menu-wrap",
         "menuVisibilityAttribute": "aria-hidden",
         "openMenuIconName": "Open Menu",
-        "closeMenuIconName": "Close Menu"
+        "closeMenuIconName": "Close Menu",
+        "twitterTID": "social-twitter",
+        "facebookTID": "social-facebook",
+        "linkedInTID": "social-linkedin"
     },
 
     "CartPage": {
