@@ -9,6 +9,7 @@ import { InventoryPage } from "../page-objects/InventoryPage";
 import { CommonFunctions } from "../page-objects/CommonFunctions";
 import * as userInfo from "../data/user-info.json";
 import * as urlPaths from "../configs/url-paths.json";
+import * as allProducts from "../constants/products.json";
 import {
     calculateTotal,
     calculateTax,
@@ -28,9 +29,9 @@ test.describe("Checkout Process", () => {
     const currencySymbol = "$";
 
     const products = [
-        "Sauce Labs Backpack",
-        "Sauce Labs Bolt T-Shirt",
-        "Sauce Labs Fleece Jacket",
+        allProducts.products[0],
+        allProducts.products[2],
+        allProducts.products[4],
     ];
 
     test.beforeAll(async ({ browser, baseURL }) => {
