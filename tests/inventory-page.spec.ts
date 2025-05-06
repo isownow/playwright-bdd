@@ -3,6 +3,8 @@ import { LoginPage } from "../page-objects/LoginPage";
 import { InventoryPage } from "../page-objects/InventoryPage";
 import { CommonFunctions } from "../page-objects/CommonFunctions";
 import * as locators from "../utils/locators.json";
+import * as allProducts from "../constants/products.json";
+import * as colors from "../constants/colors.json";
 
 let inventory: InventoryPage;
 let commonFunc: CommonFunctions;
@@ -83,5 +85,25 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
         );
     });
 
-    /* More tests to be added */
+    test("@Positive When user clicks on any 'Add to cart' button, it changes", async ({
+        page,
+    }) => {
+        // Add one product to the cart
+        await inventory.addOneProductToCart(allProducts.products[0]);
+
+        // Get the text of the button
+        const buttonText = await inventory.getAddToCartButtonText(
+            allProducts.products[0],
+        );
+
+        // Get the text color of the button
+        const addButtonLocator = page.locator("#remove-sauce-labs-backpack");
+        const buttonColor = await commonFunc.getElementColor(addButtonLocator);
+
+        // Validate the button text
+        expect(buttonText).toEqual("Remove");
+
+        // Validate the button text color
+        expect(`#${buttonColor}`).toEqual(colors.ProductsPage.removeButton);
+    });
 });
