@@ -4,7 +4,7 @@ import { InventoryPage } from "../page-objects/InventoryPage";
 import { CommonFunctions } from "../page-objects/CommonFunctions";
 import * as locators from "../utils/locators.json";
 import * as allProducts from "../constants/products.json";
-import * as colors from "../constants/colors.json";
+import * as colors from "../constants/colors.js";
 
 let inventory: InventoryPage;
 let commonFunc: CommonFunctions;
@@ -104,6 +104,6 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
         expect(buttonText).toEqual("Remove");
 
         // Validate the button text color
-        expect(`#${buttonColor}`).toEqual(colors.ProductsPage.removeButton);
+        expect(`#${buttonColor}`).toEqual(colors.inventoryPage.removeButton);
     });
 });
