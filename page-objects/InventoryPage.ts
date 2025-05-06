@@ -81,6 +81,30 @@ export class InventoryPage {
         }
     }
 
+    async addOneProductToCart(product: string) {
+        await this.page
+            .getByTestId(locators.ProductsPage.productTID)
+            .filter({
+                has: this.page
+                    .getByTestId(locators.ProductsPage.productNameTID)
+                    .filter({ hasText: product }),
+            })
+            .getByRole("button")
+            .click();
+    }
+
+    async getAddToCartButtonText(product: string) {
+        return await this.page
+            .getByTestId(locators.ProductsPage.productTID)
+            .filter({
+                has: this.page
+                    .getByTestId(locators.ProductsPage.productNameTID)
+                    .filter({ hasText: product }),
+            })
+            .getByRole("button")
+            .textContent();
+    }
+
     async doAccessibilityScan() {
         return await new AxeBuilder({ page: this.page })
             .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

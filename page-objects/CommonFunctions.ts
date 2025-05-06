@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 
 export class CommonFunctions {
     readonly page: Page;
@@ -23,5 +23,16 @@ export class CommonFunctions {
         return cursor;
     }
 
-    /* More common functions to be added */
+    async getElementColor(element: Locator) {
+        const elementColor = await element?.evaluate((el) => {
+            const rgb = window.getComputedStyle(el).color;
+            return rgb
+                .replace(/^rgb\(|\)$/g, "") // Remove "rgb("
+                .split(", ") // Split into individual values
+                .map((x) => parseInt(x).toString(16).padStart(2, "0")) // Convert to hex
+                .join(""); // Join values together
+        });
+
+        return elementColor;
+    }
 }

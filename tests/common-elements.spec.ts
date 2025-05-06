@@ -41,7 +41,7 @@ test.describe("Social Media Links Verification", () => {
     }
 
     for (const handle of socialHandles) {
-        test(`When clicked on ${handle.name} handle, new tab with expected page opens up`, async ({
+        test(`@Positive When clicked on ${handle.name} handle, new tab with expected page opens up`, async ({
             page,
         }) => {
             let newTabPromise: Promise<Page>;
