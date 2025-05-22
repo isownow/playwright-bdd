@@ -19,7 +19,7 @@ git clone https://github.com/isownow/playwright-bdd.git
 #### Navigate to the project directory and install dependencies
 ```
 
-cd playwright-sample && npm install
+cd playwright-bdd && npm install
 
 ```
 #### Install Playwright browsers
