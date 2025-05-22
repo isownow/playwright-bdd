@@ -1,18 +1,16 @@
 import test, { expect } from "@playwright/test";
 import { LoginPage } from "../page-objects/LoginPage";
 import { InventoryPage } from "../page-objects/InventoryPage";
-import { CommonFunctions } from "../page-objects/CommonFunctions";
 import * as locators from "../utils/locators.json";
 import * as allProducts from "../constants/products.json";
 import * as colors from "../constants/colors.js";
+import * as urls from "../configs/url-paths.json";
 
 let inventory: InventoryPage;
-let commonFunc: CommonFunctions;
 
 test.beforeEach(async ({ page, baseURL }) => {
     const login = new LoginPage(page, baseURL);
-    inventory = new InventoryPage(page);
-    commonFunc = new CommonFunctions(page);
+    inventory = new InventoryPage(page, baseURL);
 
     await login.performLogin();
 });
@@ -24,9 +22,22 @@ test.skip("Should not have any automatically detectable accessibility issues", a
     expect(accessibilityScanResults.violations).toEqual([]);
 });
 
+test.describe("Page load and product display", () => {
+    test("@Positive Inventory page loads successfully after login", async () => {
+        // Validate if the current url is https://www.saucedemo.com/inventory.html
+        inventory.validateCurrentURL(urls.inventoryPage);
+    });
+
+    test("@Positive At least one product card is present", async () => {
+        const products = await inventory.getAllProductNames();
+
+        expect(products.length).toBeGreaterThan(0);
+    });
+});
+
 test.describe("Basic button and cursor functionality tests on Products page", () => {
     test("@Positive Mouse cursor changes when pointed on menu icon", async () => {
-        const cursor = await commonFunc.getCursorStyle(
+        const cursor = await inventory.getCursorStyle(
             locators.ProductsPage.openMenuButtonID,
         );
 
@@ -35,7 +46,7 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
     });
 
     test("@Positive Mouse cursor changes when pointed on cart icon", async () => {
-        const cursor = await commonFunc.getCursorStyle(
+        const cursor = await inventory.getCursorStyle(
             locators.ProductsPage.shoppingCartClass,
         );
 
@@ -44,7 +55,7 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
     });
 
     test("@Positive Mouse cursor changes when pointed on filter", async () => {
-        const cursor = await commonFunc.getCursorStyle(
+        const cursor = await inventory.getCursorStyle(
             locators.ProductsPage.sortSelector.selectorClass,
         );
 
@@ -52,42 +63,38 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
         expect.soft(cursor).toEqual("pointer");
     });
 
-    test("@Positive Menu should open", async ({ page }) => {
+    test("@Positive Menu should open", async () => {
         // Click the open menu icon
-        await commonFunc.clickButtonByName("Open Menu");
+        await inventory.clickButtonByName("Open Menu");
 
         // Validate that the menu was opened
-        await expect(
-            page.locator(locators.ProductsPage.openMenuWrapperClass),
-        ).toHaveAttribute(
+        await inventory.validateAttribute(
+            locators.ProductsPage.openMenuWrapperClass,
             locators.ProductsPage.menuVisibilityAttribute,
             "false",
         );
     });
 
-    test("@Positive Menu should close", async ({ page }) => {
+    test("@Positive Menu should close", async () => {
         // Click the open menu icon
-        await commonFunc.clickButtonByName(
+        await inventory.clickButtonByName(
             locators.ProductsPage.openMenuIconName,
         );
 
         // Click the close menu icon
-        await commonFunc.clickButtonByName(
+        await inventory.clickButtonByName(
             locators.ProductsPage.closeMenuIconName,
         );
 
         // Validate that the menu was closed
-        await expect(
-            page.locator(locators.ProductsPage.openMenuWrapperClass),
-        ).toHaveAttribute(
+        await inventory.validateAttribute(
+            locators.ProductsPage.openMenuWrapperClass,
             locators.ProductsPage.menuVisibilityAttribute,
             "true",
         );
     });
 
-    test("@Positive When user clicks on any 'Add to cart' button, it changes", async ({
-        page,
-    }) => {
+    test("@Positive When user clicks on any 'Add to cart' button, it changes", async () => {
         // Add one product to the cart
         await inventory.addOneProductToCart(allProducts.products[0]);
 
@@ -97,8 +104,9 @@ test.describe("Basic button and cursor functionality tests on Products page", ()
         );
 
         // Get the text color of the button
-        const addButtonLocator = page.locator("#remove-sauce-labs-backpack");
-        const buttonColor = await commonFunc.getElementColor(addButtonLocator);
+        const buttonColor = await inventory.getElementColor(
+            locators.ProductsPage.addProductButtonID,
+        );
 
         // Validate the button text
         expect(buttonText).toEqual("Remove");

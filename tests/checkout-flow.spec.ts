@@ -6,7 +6,10 @@
 import test, { expect, Page } from "@playwright/test";
 import { LoginPage } from "../page-objects/LoginPage";
 import { InventoryPage } from "../page-objects/InventoryPage";
-import { CommonFunctions } from "../page-objects/CommonFunctions";
+import { CheckoutOverviewPage } from "../page-objects/CheckoutOverviewPage";
+import { CartPage } from "../page-objects/CartPage";
+import { CheckoutFillInfoPage } from "../page-objects/CheckoutFillInfoPage";
+import { OrderPlacedPage } from "../page-objects/OrderPlacedPage";
 import * as userInfo from "../data/user-info.json";
 import * as urlPaths from "../configs/url-paths.json";
 import * as allProducts from "../constants/products.json";
@@ -22,11 +25,12 @@ test.describe("Checkout Process", () => {
 
     let page: Page;
     let inventory: InventoryPage;
-    let commonFunc: CommonFunctions;
-    let url: string | undefined;
-    let sumOfPrices: number;
+    let checkoutOverview: CheckoutOverviewPage;
+    let cart: CartPage;
+    let checkOutFill: CheckoutFillInfoPage;
+    let orderPlaced: OrderPlacedPage;
+    let subtotal: number;
     let tax: number;
-    const currencySymbol = "$";
 
     const products = [
         allProducts.products[0],
@@ -37,10 +41,12 @@ test.describe("Checkout Process", () => {
     test.beforeAll(async ({ browser, baseURL }) => {
         const context = await browser.newContext();
         page = await context.newPage();
-        url = baseURL;
 
-        inventory = new InventoryPage(page);
-        commonFunc = new CommonFunctions(page);
+        inventory = new InventoryPage(page, baseURL);
+        checkoutOverview = new CheckoutOverviewPage(page, baseURL);
+        cart = new CartPage(page, baseURL);
+        checkOutFill = new CheckoutFillInfoPage(page, baseURL);
+        orderPlaced = new OrderPlacedPage(page, baseURL);
         const login = new LoginPage(page, baseURL);
 
         await login.performLogin();
@@ -51,143 +57,142 @@ test.describe("Checkout Process", () => {
     });
 
     test(`Add ${products.length} products to the cart and verify cart badge`, async () => {
-        // Assert successful navigation
-        await expect(page).toHaveURL(`${url}${urlPaths.productsPage}`);
+        await inventory.validateSuccessfulNavigation(urlPaths.inventoryPage);
 
         // Adding products to the cart
         await inventory.addProductsToCart(products);
 
         // Check whether the cart badge is visible
-        expect(
-            page.getByTestId(locators.ProductsPage.shoppingCartTID),
-        ).toBeVisible();
+        inventory.isCartBadgeVisible();
 
         // Validate the number displayed on the cart badge
-        expect(
-            page.getByTestId(locators.ProductsPage.shoppingCartBadgeTID),
-        ).toHaveText(products.length.toString());
+        inventory.validateCartBadgeNumber(products.length);
     });
 
     test("Proceed to cart page and verify the products displayed", async () => {
         // Click on the cart icon
-        await page.getByTestId(locators.ProductsPage.shoppingCartTID).click();
+        await inventory.clickButtonByTestID(
+            locators.ProductsPage.shoppingCartTID,
+        );
 
         // Assert successful navigation
-        await expect(page).toHaveURL(`${url}${urlPaths.cartPage}`);
+        await cart.validateSuccessfulNavigation(urlPaths.cartPage);
 
         // Validate whether the products present are as expected
-        expect(await inventory.getAllProductNames()).toEqual(products);
+        await cart.validateProducts(products);
     });
 
     test("Checkout and add personal information", async () => {
         // Checkout
-        await commonFunc.clickButtonByName(
-            locators.CartPage.nextPageButtonName,
-        );
+        await cart.clickButtonByName(locators.CartPage.nextPageButtonName);
 
         // Assert successful navigation
-        await expect(page).toHaveURL(`${url}${urlPaths.checkoutFillInfoPage}`);
+        await checkOutFill.validateSuccessfulNavigation(
+            urlPaths.checkoutFillInfoPage,
+        );
 
         // Fill the information
-        await page
-            .getByRole("textbox", { name: locators.CheckoutFillInfoPage.name1 })
-            .fill(userInfo.checkoutInfo.firstName);
-        await page
-            .getByRole("textbox", { name: locators.CheckoutFillInfoPage.name2 })
-            .fill(userInfo.checkoutInfo.firstName);
-        await page
-            .getByRole("textbox", {
-                name: locators.CheckoutFillInfoPage.pinCodePH,
-            })
-            .fill(userInfo.checkoutInfo.firstName);
+        await checkOutFill.fillTextBoxByRole(
+            locators.CheckoutFillInfoPage.name1,
+            userInfo.checkoutInfo.firstName,
+        );
+        await checkOutFill.fillTextBoxByRole(
+            locators.CheckoutFillInfoPage.name2,
+            userInfo.checkoutInfo.lastName,
+        );
+        await checkOutFill.fillTextBoxByRole(
+            locators.CheckoutFillInfoPage.pinCodePH,
+            userInfo.checkoutInfo.postalCode,
+        );
     });
 
     test("Go to overview page and verify the products", async () => {
         // Continue
-        await commonFunc.clickButtonByName(
+        await checkOutFill.clickButtonByName(
             locators.CheckoutFillInfoPage.nextPageButtonName,
         );
 
         // Assert successful navigation
-        await expect(page).toHaveURL(`${url}${urlPaths.checkoutOverviewPage}`);
+        await checkoutOverview.validateSuccessfulNavigation(
+            urlPaths.checkoutOverviewPage,
+        );
 
         // Validate whether the products present are as expected
-        expect(await inventory.getAllProductNames()).toEqual(products);
+        await checkoutOverview.validateProducts(products);
     });
 
     test("Verify subtotal on the overview page", async () => {
         // Get prices of all the products present on the page
-        const prices = await inventory.getProductPrices(products);
+        // const prices = await checkoutOverview.getProductPrices(products);
+        const prices = await checkoutOverview.getAllProductPrices();
 
-        sumOfPrices = roundToDecimals(calculateTotal(prices));
-        const gotSubtotal = await page
-            .getByTestId(locators.CheckoutOverviewPage.subtotalTID)
-            .textContent();
-        const gotSubtotalFormatted = Number(
-            gotSubtotal?.split(currencySymbol)[1],
+        // Sum of all the prices
+        subtotal = roundToDecimals(calculateTotal(prices));
+
+        // Get the displayed subtotal from the page
+        const displayedSubtotal = await checkoutOverview.getDisplayedAmount(
+            locators.CheckoutOverviewPage.subtotalTID,
         );
 
-        // Validate calculated subtotal
-        expect.soft(gotSubtotalFormatted).toEqual(sumOfPrices);
+        // Validate the displayed subtotal on the page
+        expect.soft(displayedSubtotal).toEqual(subtotal);
     });
 
     test("Verify tax on the overview page", async () => {
-        tax = roundToDecimals(calculateTax(sumOfPrices, 8));
-        const gotTax = await page
-            .getByTestId(locators.CheckoutOverviewPage.taxITD)
-            .textContent();
-        const gotTaxFormatted = Number(gotTax?.split(currencySymbol)[1]);
+        // Calculate tax
+        tax = roundToDecimals(calculateTax(subtotal, 8));
 
-        // Validate calculated tax
-        expect.soft(gotTaxFormatted).toEqual(tax);
+        // Get the displayed tax from the page
+        const displayedTax = await checkoutOverview.getDisplayedAmount(
+            locators.CheckoutOverviewPage.taxITD,
+        );
+
+        // Validate displayed tax on the page
+        expect.soft(displayedTax).toEqual(tax);
     });
 
     test("Verify total on the overview page", async () => {
-        const finalTotal = roundToDecimals(sumOfPrices + tax);
-        const gotFinalTotal = await page
-            .getByTestId(locators.CheckoutOverviewPage.totalTID)
-            .textContent();
-        const gotFinalTotalFormatted = Number(
-            gotFinalTotal?.split(currencySymbol)[1],
+        // Calculate final total
+        const finalTotal = roundToDecimals(subtotal + tax);
+
+        // Get the displayed final total from the page
+        const displayedFinalTotal = await checkoutOverview.getDisplayedAmount(
+            locators.CheckoutOverviewPage.totalTID,
         );
 
         // Validate final calculated price
-        expect.soft(gotFinalTotalFormatted).toEqual(finalTotal);
+        expect.soft(displayedFinalTotal).toEqual(finalTotal);
     });
 
     test("Go to final page and visually verify the page", async ({
         headless,
     }) => {
         // Finish
-        await commonFunc.clickButtonByName(
+        await checkoutOverview.clickButtonByName(
             locators.CheckoutOverviewPage.nextPageButtonName,
         );
 
         // Assert successful navigation
-        await expect(page).toHaveURL(`${url}${urlPaths.orderPlacedPage}`);
+        await orderPlaced.validateSuccessfulNavigation(
+            urlPaths.orderPlacedPage,
+        );
 
-        // Verify the thank you page
-        if (headless)
-            await expect.soft(page).toHaveScreenshot({
-                maxDiffPixels: 100,
-            });
+        // Verify the thank you page visually
+        await orderPlaced.validateScreenshot(headless);
     });
 
     test("Go back to home and visually verify the home page", async ({
         headless,
     }) => {
         // Back Home
-        await commonFunc.clickButtonByName(
+        await orderPlaced.clickButtonByName(
             locators.OrderPlacedPage.nextPageButtonName,
         );
 
         // Assert successful navigation
-        await expect(page).toHaveURL(`${url}${urlPaths.productsPage}`);
+        await inventory.validateSuccessfulNavigation(urlPaths.inventoryPage);
 
-        // Verify the home page
-        if (headless)
-            await expect.soft(page).toHaveScreenshot({
-                maxDiffPixels: 100,
-            });
+        // Verify the home page visually
+        await inventory.validateScreenshot(headless);
     });
 });

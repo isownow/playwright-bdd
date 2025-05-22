@@ -1,8 +1,9 @@
-import test, { expect, Page } from "@playwright/test";
+import test, { expect } from "@playwright/test";
 import { LoginPage } from "../page-objects/LoginPage";
-import { CommonFunctions } from "../page-objects/CommonFunctions";
 import * as locators from "../utils/locators.json";
+import { CommonFunctions } from "../page-objects/CommonFunctions";
 
+let login: LoginPage;
 let commonFunc: CommonFunctions;
 
 const socialHandles = [
@@ -24,8 +25,8 @@ const socialHandles = [
 ];
 
 test.beforeEach(async ({ page, baseURL }) => {
-    const login = new LoginPage(page, baseURL);
-    commonFunc = new CommonFunctions(page);
+    login = new LoginPage(page, baseURL);
+    commonFunc = new CommonFunctions(page, baseURL);
 
     await login.performLogin();
 });
@@ -41,19 +42,11 @@ test.describe("Social Media Links Verification", () => {
     }
 
     for (const handle of socialHandles) {
-        test(`@Positive When clicked on ${handle.name} handle, new tab with expected page opens up`, async ({
-            page,
-        }) => {
-            let newTabPromise: Promise<Page>;
-
+        test(`@Positive When clicked on ${handle.name} handle, new tab with expected page opens up`, async () => {
             // Listen for the new tab event and click the button for opening new tab
-            await Promise.all([
-                (newTabPromise = page.waitForEvent("popup")),
-                page.click(handle.selector),
-            ]);
-
-            // Capture the new tab
-            const newTab = await newTabPromise;
+            const newTab = await commonFunc.clickAndNavigateToNewTab(
+                handle.selector,
+            );
 
             // Validate that the correct tab is loaded
             expect(newTab.url()).toEqual(handle.url);

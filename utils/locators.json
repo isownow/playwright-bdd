@@ -11,6 +11,7 @@
             "aToZ": "az",
             "zToA": "za"
         },
+        "addProductButtonID": "#remove-sauce-labs-backpack",
         "shoppingCartTID": "shopping-cart-link",
         "shoppingCartClass": ".shopping_cart_link",
         "shoppingCartBadgeTID": "shopping-cart-badge",
