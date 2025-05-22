@@ -13,7 +13,7 @@ ___
 #### Clone this Git repository or download the zip file
 ```
 
-git clone https://github.com/isownow/playwright-sample.git
+git clone https://github.com/isownow/playwright-bdd.git
 
 ```
 #### Navigate to the project directory and install dependencies
