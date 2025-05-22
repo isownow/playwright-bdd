@@ -14,7 +14,7 @@ test.describe("Verify sorting order of items", () => {
 
     test.beforeEach(async ({ page, baseURL }) => {
         const login = new LoginPage(page, baseURL);
-        inventory = new InventoryPage(page);
+        inventory = new InventoryPage(page, baseURL);
 
         await login.performLogin();
     });
