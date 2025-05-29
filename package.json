@@ -17,6 +17,7 @@
     "typescript-eslint": "^8.31.0"
   },
   "dependencies": {
-    "@axe-core/playwright": "^4.10.1"
+    "@axe-core/playwright": "^4.10.1",
+    "@cucumber/cucumber": "^11.3.0"
   }
 }
