@@ -28,17 +28,17 @@ export class CommonFunctions {
         await this.page.getByTestId(testIDLocator).click();
     }
 
-    async validateScreenshot() {
-        const isHeadless = this.page.context().browser()?.isConnected(); // Check actual browser mode
+    async validateScreenshot(testName: string) {
+        const isHeadless = this.page.context().browser()?.isConnected();
 
         if (isHeadless) {
-            await expect.soft(this.page).toHaveScreenshot({
+            await expect.soft(this.page).toHaveScreenshot(`${testName}.png`, {
                 maxDiffPixels: 100,
             });
         }
     }
 
-    async validateCurrentURL(expectedURL) {
+    async validateCurrentURL(expectedURL: string) {
         const currentURL = this.page.url();
         expect(currentURL).toEqual(`${this.baseURL}${expectedURL}`);
     }

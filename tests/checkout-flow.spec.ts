@@ -205,7 +205,9 @@ test.describe.parallel("Checkout Process", () => {
                 );
 
                 // Verify the thank you page visually
-                await orderPlaced.validateScreenshot();
+                await orderPlaced.validateScreenshot(
+                    `checkout-finalpage-${user.username}`,
+                );
             });
 
             test("Go back to home and visually verify the home page", async () => {
@@ -220,7 +222,9 @@ test.describe.parallel("Checkout Process", () => {
                 );
 
                 // Verify the home page visually
-                await inventory.validateScreenshot();
+                await inventory.validateScreenshot(
+                    `checkout-homepage-${user.username}`,
+                );
             });
         });
     });
