@@ -5,113 +5,111 @@ import * as locators from "../utils/locators.json";
 import * as allProducts from "../constants/products.json";
 import * as colors from "../constants/colors.js";
 import * as urls from "../configs/url-paths.json";
+import users from "../data/credentials.json";
 
 let inventory: InventoryPage;
 
-test.beforeEach(async ({ page, baseURL }) => {
-    const login = new LoginPage(page, baseURL);
-    inventory = new InventoryPage(page, baseURL);
+const elements = [
+    { name: "menu", locator: locators.ProductsPage.openMenuButtonID },
+    { name: "cart", locator: locators.ProductsPage.shoppingCartClass },
+    {
+        name: "filter",
+        locator: locators.ProductsPage.sortSelector.selectorClass,
+    },
+];
 
-    await login.performLogin();
-});
+test.describe.parallel("Inventory page test", () => {
+    users.forEach((user) => {
+        test.beforeEach(async ({ page, baseURL }) => {
+            const login = new LoginPage(
+                page,
+                baseURL,
+                user.username,
+                user.password,
+            );
+            inventory = new InventoryPage(page, baseURL);
 
-test.skip("Should not have any automatically detectable accessibility issues", async () => {
-    const accessibilityScanResults = await inventory.doAccessibilityScan();
+            await login.performLogin();
+        });
 
-    // Check if there are any issues in the scan
-    expect(accessibilityScanResults.violations).toEqual([]);
-});
+        test.describe("Page load and product display", () => {
+            test(`@Positive Inventory page loads successfully after login for ${user.username}`, async () => {
+                // Validate if the current url is https://www.saucedemo.com/inventory.html
+                inventory.validateCurrentURL(urls.inventoryPage);
+            });
 
-test.describe("Page load and product display", () => {
-    test("@Positive Inventory page loads successfully after login", async () => {
-        // Validate if the current url is https://www.saucedemo.com/inventory.html
-        inventory.validateCurrentURL(urls.inventoryPage);
-    });
+            test(`@Positive At least one product card is present for ${user.username}`, async () => {
+                const products = await inventory.getAllProductNames();
 
-    test("@Positive At least one product card is present", async () => {
-        const products = await inventory.getAllProductNames();
+                expect(products.length).toBeGreaterThan(0);
+            });
+        });
 
-        expect(products.length).toBeGreaterThan(0);
-    });
-});
+        test.describe("Basic button and cursor functionality tests on Products page", () => {
+            for (const element of elements) {
+                test(`@Positive Mouse cursor changes when pointed on ${element.name} icon for ${user.username}`, async () => {
+                    const cursor = await inventory.getCursorStyle(
+                        element.locator,
+                    );
 
-test.describe("Basic button and cursor functionality tests on Products page", () => {
-    test("@Positive Mouse cursor changes when pointed on menu icon", async () => {
-        const cursor = await inventory.getCursorStyle(
-            locators.ProductsPage.openMenuButtonID,
-        );
+                    // Validate whether the mouse cursor changed
+                    expect.soft(cursor).toEqual("pointer");
+                });
+            }
 
-        // Validate whether the mouse cursor changed
-        expect.soft(cursor).toEqual("pointer");
-    });
+            test(`@Positive Menu should open for ${user.username}`, async () => {
+                // Click the open menu icon
+                await inventory.clickButtonByName("Open Menu");
 
-    test("@Positive Mouse cursor changes when pointed on cart icon", async () => {
-        const cursor = await inventory.getCursorStyle(
-            locators.ProductsPage.shoppingCartClass,
-        );
+                // Validate that the menu was opened
+                await inventory.validateAttribute(
+                    locators.ProductsPage.openMenuWrapperClass,
+                    locators.ProductsPage.menuVisibilityAttribute,
+                    "false",
+                );
+            });
 
-        // Validate whether the mouse cursor changed
-        expect.soft(cursor).toEqual("pointer");
-    });
+            test(`@Positive Menu should close for ${user.username}`, async () => {
+                // Click the open menu icon
+                await inventory.clickButtonByName(
+                    locators.ProductsPage.openMenuIconName,
+                );
 
-    test("@Positive Mouse cursor changes when pointed on filter", async () => {
-        const cursor = await inventory.getCursorStyle(
-            locators.ProductsPage.sortSelector.selectorClass,
-        );
+                // Click the close menu icon
+                await inventory.clickButtonByName(
+                    locators.ProductsPage.closeMenuIconName,
+                );
 
-        // Validate whether the mouse cursor changed
-        expect.soft(cursor).toEqual("pointer");
-    });
+                // Validate that the menu was closed
+                await inventory.validateAttribute(
+                    locators.ProductsPage.openMenuWrapperClass,
+                    locators.ProductsPage.menuVisibilityAttribute,
+                    "true",
+                );
+            });
 
-    test("@Positive Menu should open", async () => {
-        // Click the open menu icon
-        await inventory.clickButtonByName("Open Menu");
+            test(`@Positive When user clicks on any 'Add to cart' button, it changes for ${user.username}`, async () => {
+                // Add one product to the cart
+                await inventory.addOneProductToCart(allProducts.products[0]);
 
-        // Validate that the menu was opened
-        await inventory.validateAttribute(
-            locators.ProductsPage.openMenuWrapperClass,
-            locators.ProductsPage.menuVisibilityAttribute,
-            "false",
-        );
-    });
+                // Get the text of the button
+                const buttonText = await inventory.getAddToCartButtonText(
+                    allProducts.products[0],
+                );
 
-    test("@Positive Menu should close", async () => {
-        // Click the open menu icon
-        await inventory.clickButtonByName(
-            locators.ProductsPage.openMenuIconName,
-        );
+                // Get the text color of the button
+                const buttonColor = await inventory.getElementColor(
+                    locators.ProductsPage.addProductButtonID,
+                );
 
-        // Click the close menu icon
-        await inventory.clickButtonByName(
-            locators.ProductsPage.closeMenuIconName,
-        );
+                // Validate the button text
+                expect(buttonText).toEqual("Remove");
 
-        // Validate that the menu was closed
-        await inventory.validateAttribute(
-            locators.ProductsPage.openMenuWrapperClass,
-            locators.ProductsPage.menuVisibilityAttribute,
-            "true",
-        );
-    });
-
-    test("@Positive When user clicks on any 'Add to cart' button, it changes", async () => {
-        // Add one product to the cart
-        await inventory.addOneProductToCart(allProducts.products[0]);
-
-        // Get the text of the button
-        const buttonText = await inventory.getAddToCartButtonText(
-            allProducts.products[0],
-        );
-
-        // Get the text color of the button
-        const buttonColor = await inventory.getElementColor(
-            locators.ProductsPage.addProductButtonID,
-        );
-
-        // Validate the button text
-        expect(buttonText).toEqual("Remove");
-
-        // Validate the button text color
-        expect(`#${buttonColor}`).toEqual(colors.inventoryPage.removeButton);
+                // Validate the button text color
+                expect(`#${buttonColor}`).toEqual(
+                    colors.inventoryPage.removeButton,
+                );
+            });
+        });
     });
 });

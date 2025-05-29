@@ -20,179 +20,208 @@ import {
 } from "../utils/helpers";
 import * as locators from "../utils/locators.json";
 
-test.describe("Checkout Process", () => {
-    test.describe.configure({ mode: "serial" });
+const users = [
+    {
+        type: "standard",
+        username: "standard_user",
+        password: "secret_sauce",
+    },
+    {
+        type: "problem",
+        username: "problem_user",
+        password: "secret_sauce",
+    },
+    {
+        type: "performance",
+        username: "performance_glitch_user",
+        password: "secret_sauce",
+    },
+];
 
-    let page: Page;
-    let inventory: InventoryPage;
-    let checkoutOverview: CheckoutOverviewPage;
-    let cart: CartPage;
-    let checkOutFill: CheckoutFillInfoPage;
-    let orderPlaced: OrderPlacedPage;
-    let subtotal: number;
-    let tax: number;
+test.describe.parallel("Checkout Process", () => {
+    users.forEach((user) => {
+        test.describe.serial(`Checkout flow test for ${user.username}`, () => {
+            let page: Page;
+            let inventory: InventoryPage;
+            let checkoutOverview: CheckoutOverviewPage;
+            let cart: CartPage;
+            let checkOutFill: CheckoutFillInfoPage;
+            let orderPlaced: OrderPlacedPage;
+            let subtotal: number;
+            let tax: number;
 
-    const products = [
-        allProducts.products[0],
-        allProducts.products[2],
-        allProducts.products[4],
-    ];
+            const products = [
+                allProducts.products[0],
+                allProducts.products[2],
+                allProducts.products[4],
+            ];
 
-    test.beforeAll(async ({ browser, baseURL }) => {
-        const context = await browser.newContext();
-        page = await context.newPage();
+            test.beforeAll(async ({ browser, baseURL }) => {
+                const context = await browser.newContext();
+                page = await context.newPage();
 
-        inventory = new InventoryPage(page, baseURL);
-        checkoutOverview = new CheckoutOverviewPage(page, baseURL);
-        cart = new CartPage(page, baseURL);
-        checkOutFill = new CheckoutFillInfoPage(page, baseURL);
-        orderPlaced = new OrderPlacedPage(page, baseURL);
-        const login = new LoginPage(page, baseURL);
+                inventory = new InventoryPage(page, baseURL);
+                checkoutOverview = new CheckoutOverviewPage(page, baseURL);
+                cart = new CartPage(page, baseURL);
+                checkOutFill = new CheckoutFillInfoPage(page, baseURL);
+                orderPlaced = new OrderPlacedPage(page, baseURL);
+                const login = new LoginPage(
+                    page,
+                    baseURL,
+                    user.username,
+                    user.password,
+                );
 
-        await login.performLogin();
-    });
+                await login.performLogin();
+            });
 
-    test.afterAll(async () => {
-        await page.close();
-    });
+            test.afterAll(async () => {
+                await page.close();
+            });
 
-    test(`Add ${products.length} products to the cart and verify cart badge`, async () => {
-        await inventory.validateSuccessfulNavigation(urlPaths.inventoryPage);
+            test(`Add ${products.length} products to the cart and verify cart badge`, async () => {
+                await inventory.validateSuccessfulNavigation(
+                    urlPaths.inventoryPage,
+                );
 
-        // Adding products to the cart
-        await inventory.addProductsToCart(products);
+                // Adding products to the cart
+                await inventory.addProductsToCart(products);
 
-        // Check whether the cart badge is visible
-        inventory.isCartBadgeVisible();
+                // Check whether the cart badge is visible
+                inventory.isCartBadgeVisible();
 
-        // Validate the number displayed on the cart badge
-        inventory.validateCartBadgeNumber(products.length);
-    });
+                // Validate the number displayed on the cart badge
+                inventory.validateCartBadgeNumber(products.length);
+            });
 
-    test("Proceed to cart page and verify the products displayed", async () => {
-        // Click on the cart icon
-        await inventory.clickButtonByTestID(
-            locators.ProductsPage.shoppingCartTID,
-        );
+            test("Proceed to cart page and verify the products displayed", async () => {
+                // Click on the cart icon
+                await inventory.clickButtonByTestID(
+                    locators.ProductsPage.shoppingCartTID,
+                );
 
-        // Assert successful navigation
-        await cart.validateSuccessfulNavigation(urlPaths.cartPage);
+                // Assert successful navigation
+                await cart.validateSuccessfulNavigation(urlPaths.cartPage);
 
-        // Validate whether the products present are as expected
-        await cart.validateProducts(products);
-    });
+                // Validate whether the products present are as expected
+                await cart.validateProducts(products);
+            });
 
-    test("Checkout and add personal information", async () => {
-        // Checkout
-        await cart.clickButtonByName(locators.CartPage.nextPageButtonName);
+            test("Checkout and add personal information", async () => {
+                // Checkout
+                await cart.clickButtonByName(
+                    locators.CartPage.nextPageButtonName,
+                );
 
-        // Assert successful navigation
-        await checkOutFill.validateSuccessfulNavigation(
-            urlPaths.checkoutFillInfoPage,
-        );
+                // Assert successful navigation
+                await checkOutFill.validateSuccessfulNavigation(
+                    urlPaths.checkoutFillInfoPage,
+                );
 
-        // Fill the information
-        await checkOutFill.fillTextBoxByRole(
-            locators.CheckoutFillInfoPage.name1,
-            userInfo.checkoutInfo.firstName,
-        );
-        await checkOutFill.fillTextBoxByRole(
-            locators.CheckoutFillInfoPage.name2,
-            userInfo.checkoutInfo.lastName,
-        );
-        await checkOutFill.fillTextBoxByRole(
-            locators.CheckoutFillInfoPage.pinCodePH,
-            userInfo.checkoutInfo.postalCode,
-        );
-    });
+                // Fill the information
+                await checkOutFill.fillTextBoxByRole(
+                    locators.CheckoutFillInfoPage.name1,
+                    userInfo.checkoutInfo.firstName,
+                );
+                await checkOutFill.fillTextBoxByRole(
+                    locators.CheckoutFillInfoPage.name2,
+                    userInfo.checkoutInfo.lastName,
+                );
+                await checkOutFill.fillTextBoxByRole(
+                    locators.CheckoutFillInfoPage.pinCodePH,
+                    userInfo.checkoutInfo.postalCode,
+                );
+            });
 
-    test("Go to overview page and verify the products", async () => {
-        // Continue
-        await checkOutFill.clickButtonByName(
-            locators.CheckoutFillInfoPage.nextPageButtonName,
-        );
+            test("Go to overview page and verify the products", async () => {
+                // Continue
+                await checkOutFill.clickButtonByName(
+                    locators.CheckoutFillInfoPage.nextPageButtonName,
+                );
 
-        // Assert successful navigation
-        await checkoutOverview.validateSuccessfulNavigation(
-            urlPaths.checkoutOverviewPage,
-        );
+                // Assert successful navigation
+                await checkoutOverview.validateSuccessfulNavigation(
+                    urlPaths.checkoutOverviewPage,
+                );
 
-        // Validate whether the products present are as expected
-        await checkoutOverview.validateProducts(products);
-    });
+                // Validate whether the products present are as expected
+                await checkoutOverview.validateProducts(products);
+            });
 
-    test("Verify subtotal on the overview page", async () => {
-        // Get prices of all the products present on the page
-        // const prices = await checkoutOverview.getProductPrices(products);
-        const prices = await checkoutOverview.getAllProductPrices();
+            test("Verify subtotal on the overview page", async () => {
+                // Get prices of all the products present on the page
+                // const prices = await checkoutOverview.getProductPrices(products);
+                const prices = await checkoutOverview.getAllProductPrices();
 
-        // Sum of all the prices
-        subtotal = roundToDecimals(calculateTotal(prices));
+                // Sum of all the prices
+                subtotal = roundToDecimals(calculateTotal(prices));
 
-        // Get the displayed subtotal from the page
-        const displayedSubtotal = await checkoutOverview.getDisplayedAmount(
-            locators.CheckoutOverviewPage.subtotalTID,
-        );
+                // Get the displayed subtotal from the page
+                const displayedSubtotal =
+                    await checkoutOverview.getDisplayedAmount(
+                        locators.CheckoutOverviewPage.subtotalTID,
+                    );
 
-        // Validate the displayed subtotal on the page
-        expect.soft(displayedSubtotal).toEqual(subtotal);
-    });
+                // Validate the displayed subtotal on the page
+                expect.soft(displayedSubtotal).toEqual(subtotal);
+            });
 
-    test("Verify tax on the overview page", async () => {
-        // Calculate tax
-        tax = roundToDecimals(calculateTax(subtotal, 8));
+            test("Verify tax on the overview page", async () => {
+                // Calculate tax
+                tax = roundToDecimals(calculateTax(subtotal, 8));
 
-        // Get the displayed tax from the page
-        const displayedTax = await checkoutOverview.getDisplayedAmount(
-            locators.CheckoutOverviewPage.taxITD,
-        );
+                // Get the displayed tax from the page
+                const displayedTax = await checkoutOverview.getDisplayedAmount(
+                    locators.CheckoutOverviewPage.taxITD,
+                );
 
-        // Validate displayed tax on the page
-        expect.soft(displayedTax).toEqual(tax);
-    });
+                // Validate displayed tax on the page
+                expect.soft(displayedTax).toEqual(tax);
+            });
 
-    test("Verify total on the overview page", async () => {
-        // Calculate final total
-        const finalTotal = roundToDecimals(subtotal + tax);
+            test("Verify total on the overview page", async () => {
+                // Calculate final total
+                const finalTotal = roundToDecimals(subtotal + tax);
 
-        // Get the displayed final total from the page
-        const displayedFinalTotal = await checkoutOverview.getDisplayedAmount(
-            locators.CheckoutOverviewPage.totalTID,
-        );
+                // Get the displayed final total from the page
+                const displayedFinalTotal =
+                    await checkoutOverview.getDisplayedAmount(
+                        locators.CheckoutOverviewPage.totalTID,
+                    );
 
-        // Validate final calculated price
-        expect.soft(displayedFinalTotal).toEqual(finalTotal);
-    });
+                // Validate final calculated price
+                expect.soft(displayedFinalTotal).toEqual(finalTotal);
+            });
 
-    test("Go to final page and visually verify the page", async ({
-        headless,
-    }) => {
-        // Finish
-        await checkoutOverview.clickButtonByName(
-            locators.CheckoutOverviewPage.nextPageButtonName,
-        );
+            test("Go to final page and visually verify the page", async () => {
+                // Finish
+                await checkoutOverview.clickButtonByName(
+                    locators.CheckoutOverviewPage.nextPageButtonName,
+                );
 
-        // Assert successful navigation
-        await orderPlaced.validateSuccessfulNavigation(
-            urlPaths.orderPlacedPage,
-        );
+                // Assert successful navigation
+                await orderPlaced.validateSuccessfulNavigation(
+                    urlPaths.orderPlacedPage,
+                );
 
-        // Verify the thank you page visually
-        await orderPlaced.validateScreenshot(headless);
-    });
+                // Verify the thank you page visually
+                await orderPlaced.validateScreenshot();
+            });
 
-    test("Go back to home and visually verify the home page", async ({
-        headless,
-    }) => {
-        // Back Home
-        await orderPlaced.clickButtonByName(
-            locators.OrderPlacedPage.nextPageButtonName,
-        );
+            test("Go back to home and visually verify the home page", async () => {
+                // Back Home
+                await orderPlaced.clickButtonByName(
+                    locators.OrderPlacedPage.nextPageButtonName,
+                );
 
-        // Assert successful navigation
-        await inventory.validateSuccessfulNavigation(urlPaths.inventoryPage);
+                // Assert successful navigation
+                await inventory.validateSuccessfulNavigation(
+                    urlPaths.inventoryPage,
+                );
 
-        // Verify the home page visually
-        await inventory.validateScreenshot(headless);
+                // Verify the home page visually
+                await inventory.validateScreenshot();
+            });
+        });
     });
 });

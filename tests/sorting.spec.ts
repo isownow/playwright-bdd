@@ -7,13 +7,19 @@ import {
     verifyLowToHigh,
 } from "../utils/helpers";
 import * as locators from "../utils/locators.json";
+import users from "../data/credentials.json";
 import { LoginPage } from "../page-objects/LoginPage";
 
 test.describe("Verify sorting order of items", () => {
     let inventory: InventoryPage;
 
     test.beforeEach(async ({ page, baseURL }) => {
-        const login = new LoginPage(page, baseURL);
+        const login = new LoginPage(
+            page,
+            baseURL,
+            users[0].username,
+            users[0].password,
+        );
         inventory = new InventoryPage(page, baseURL);
 
         await login.performLogin();
