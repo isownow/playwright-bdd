@@ -28,11 +28,14 @@ export class CommonFunctions {
         await this.page.getByTestId(testIDLocator).click();
     }
 
-    async validateScreenshot(headless: boolean) {
-        if (headless)
+    async validateScreenshot() {
+        const isHeadless = this.page.context().browser()?.isConnected(); // Check actual browser mode
+
+        if (isHeadless) {
             await expect.soft(this.page).toHaveScreenshot({
                 maxDiffPixels: 100,
             });
+        }
     }
 
     async validateCurrentURL(expectedURL) {
