@@ -1,11 +1,8 @@
-import test, { expect } from "@playwright/test";
-import { LoginPage } from "../page-objects/LoginPage";
+import { expect } from "@playwright/test";
+import { test as base } from "../tests/fixtures";
 import * as locators from "../utils/locators.json";
 import users from "../data/credentials.json";
 import { CommonFunctions } from "../page-objects/CommonFunctions";
-
-let login: LoginPage;
-let commonFunc: CommonFunctions;
 
 const socialHandles = [
     {
@@ -25,18 +22,27 @@ const socialHandles = [
     },
 ];
 
-test.describe.parallel("Testing common elements across pages", () => {
-    users.forEach((user) => {
-        test.beforeEach(async ({ page, baseURL }) => {
-            login = new LoginPage(page, baseURL, user.username, user.password);
-            commonFunc = new CommonFunctions(page, baseURL);
+// This fixture depends on login fixture and initializes the commonFunc object.
+export const test = base.extend<{ commonFunc: CommonFunctions }>({
+    commonFunc: async ({ page, baseURL, login }, use) => {
+        if (!login) {
+            throw new Error("Login fixture missing.");
+        }
 
-            await login.performLogin();
-        });
+        const commonFunc = new CommonFunctions(page, baseURL);
+        await use(commonFunc);
+    },
+});
+
+users.forEach((user) => {
+    test.describe.parallel(`Tests for ${user.username}`, () => {
+        test.use({ user });
 
         test.describe("Social Media Links Verification", () => {
             for (const handle of socialHandles) {
-                test(`@Positive Mouse cursor changes when pointed on ${handle.name} handle for ${user.username}`, async () => {
+                test(`@Positive Mouse cursor changes when pointed on ${handle.name} handle`, async ({
+                    commonFunc,
+                }) => {
                     const cursor = await commonFunc.getCursorStyle(
                         handle.selector,
                     );
@@ -47,7 +53,9 @@ test.describe.parallel("Testing common elements across pages", () => {
             }
 
             for (const handle of socialHandles) {
-                test(`@Positive When clicked on ${handle.name} handle, new tab with expected page opens up for ${user.username}`, async () => {
+                test(`@Positive When clicked on ${handle.name} handle, new tab with expected page opens up`, async ({
+                    commonFunc,
+                }) => {
                     // Listen for the new tab event and click the button for opening new tab
                     const newTab = await commonFunc.clickAndNavigateToNewTab(
                         handle.selector,
