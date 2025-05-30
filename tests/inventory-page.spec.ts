@@ -1,13 +1,17 @@
-import test, { expect } from "@playwright/test";
-import { LoginPage } from "../page-objects/LoginPage";
+import { expect } from "@playwright/test";
+import { test as base } from "../tests/fixtures";
 import { InventoryPage } from "../page-objects/InventoryPage";
 import * as locators from "../utils/locators.json";
 import * as allProducts from "../constants/products.json";
 import * as colors from "../constants/colors.js";
 import * as urls from "../configs/url-paths.json";
 import users from "../data/credentials.json";
-
-let inventory: InventoryPage;
+import {
+    verifyZAOrder,
+    verifyAZOrder,
+    verifyHighToLow,
+    verifyLowToHigh,
+} from "../utils/helpers";
 
 const elements = [
     { name: "menu", locator: locators.ProductsPage.openMenuButtonID },
@@ -18,27 +22,33 @@ const elements = [
     },
 ];
 
-test.describe.parallel("Inventory page test", () => {
-    users.forEach((user) => {
-        test.beforeEach(async ({ page, baseURL }) => {
-            const login = new LoginPage(
-                page,
-                baseURL,
-                user.username,
-                user.password,
-            );
-            inventory = new InventoryPage(page, baseURL);
+// This fixture depends on login fixture and initializes the inventory object.
+export const test = base.extend<{ inventory: InventoryPage }>({
+    inventory: async ({ page, baseURL, login }, use) => {
+        if (!login) {
+            throw new Error("Login fixture missing.");
+        }
 
-            await login.performLogin();
-        });
+        const inventory = new InventoryPage(page, baseURL);
+        await use(inventory);
+    },
+});
+
+users.forEach((user) => {
+    test.describe.parallel(`Tests for ${user.username}`, () => {
+        test.use({ user });
 
         test.describe("Page load and product display", () => {
-            test(`@Positive Inventory page loads successfully after login for ${user.username}`, async () => {
+            test(`@Positive Inventory page loads successfully after login`, async ({
+                inventory,
+            }) => {
                 // Validate if the current url is https://www.saucedemo.com/inventory.html
                 inventory.validateCurrentURL(urls.inventoryPage);
             });
 
-            test(`@Positive At least one product card is present for ${user.username}`, async () => {
+            test(`@Positive At least one product card is present`, async ({
+                inventory,
+            }) => {
                 const products = await inventory.getAllProductNames();
 
                 expect(products.length).toBeGreaterThan(0);
@@ -47,7 +57,9 @@ test.describe.parallel("Inventory page test", () => {
 
         test.describe("Basic button and cursor functionality tests on Products page", () => {
             for (const element of elements) {
-                test(`@Positive Mouse cursor changes when pointed on ${element.name} icon for ${user.username}`, async () => {
+                test(`@Positive Mouse cursor changes when pointed on ${element.name} icon`, async ({
+                    inventory,
+                }) => {
                     const cursor = await inventory.getCursorStyle(
                         element.locator,
                     );
@@ -57,7 +69,7 @@ test.describe.parallel("Inventory page test", () => {
                 });
             }
 
-            test(`@Positive Menu should open for ${user.username}`, async () => {
+            test(`@Positive Menu should open`, async ({ inventory }) => {
                 // Click the open menu icon
                 await inventory.clickButtonByName("Open Menu");
 
@@ -69,7 +81,7 @@ test.describe.parallel("Inventory page test", () => {
                 );
             });
 
-            test(`@Positive Menu should close for ${user.username}`, async () => {
+            test(`@Positive Menu should close`, async ({ inventory }) => {
                 // Click the open menu icon
                 await inventory.clickButtonByName(
                     locators.ProductsPage.openMenuIconName,
@@ -88,7 +100,9 @@ test.describe.parallel("Inventory page test", () => {
                 );
             });
 
-            test(`@Positive When user clicks on any 'Add to cart' button, it changes for ${user.username}`, async () => {
+            test(`@Positive When user clicks on any 'Add to cart' button, it changes`, async ({
+                inventory,
+            }) => {
                 // Add one product to the cart
                 await inventory.addOneProductToCart(allProducts.products[0]);
 
@@ -109,6 +123,63 @@ test.describe.parallel("Inventory page test", () => {
                 expect(`#${buttonColor}`).toEqual(
                     colors.inventoryPage.removeButton,
                 );
+            });
+        });
+
+        test.describe("Verify sorting order of items", () => {
+            test(`@Positive Verify the sorting order displayed for A-Z on the 'All Items' page`, async ({
+                inventory,
+            }) => {
+                // Get all product names
+                const itemNames = await inventory.getAllProductNames();
+
+                // Verify if the product names are in A to Z order
+                expect(verifyAZOrder(itemNames)).toBeTruthy();
+            });
+
+            test(`@Positive Verify the sorting order displayed for Z-A on the 'All Items' page`, async ({
+                inventory,
+            }) => {
+                // Select the Z-A filter option
+                await inventory.selectSortOption(
+                    locators.ProductsPage.sortSelector.zToA,
+                );
+
+                // Get all product names
+                const itemNames = await inventory.getAllProductNames();
+
+                // Verify if the product names are in Z to A order
+                expect(verifyZAOrder(itemNames)).toBeTruthy();
+            });
+
+            test(`@Positive Verify the price order (low-high) displayed on the 'All Items' page`, async ({
+                inventory,
+            }) => {
+                // Select the Price (low to high) option
+                await inventory.selectSortOption(
+                    locators.ProductsPage.sortSelector.lowToHigh,
+                );
+
+                // Get all product prices
+                const itemPrices = await inventory.getAllProductPrices();
+
+                // Verify if the product prices are ordered from High to Low
+                expect(verifyLowToHigh(itemPrices)).toBeTruthy();
+            });
+
+            test(`@Positive Verify the price order (high-low) displayed on the 'All Items' page`, async ({
+                inventory,
+            }) => {
+                // Select the Price (high to low) option
+                await inventory.selectSortOption(
+                    locators.ProductsPage.sortSelector.highToLow,
+                );
+
+                // Get all product prices
+                const itemPrices = await inventory.getAllProductPrices();
+
+                // Verify if the product prices are ordered from High to Low
+                expect(verifyHighToLow(itemPrices)).toBeTruthy();
             });
         });
     });
