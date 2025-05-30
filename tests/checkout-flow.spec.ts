@@ -1,5 +1,5 @@
 /**
- * These tests are designed to run sequentially.
+ * These tests are designed to run sequentially per user.
  * Running tests independently may lead to unexpected results.
  */
 
