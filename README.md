@@ -13,13 +13,13 @@ ___
 #### Clone this Git repository or download the zip file
 ```
 
-git clone https://github.com/isownow/playwright-bdd.git
+git clone https://github.com/isownow/playwright-swaglabs.git
 
 ```
 #### Navigate to the project directory and install dependencies
 ```
 
-cd playwright-bdd && npm install
+cd playwright-swaglabs && npm install
 
 ```
 #### Install Playwright browsers
