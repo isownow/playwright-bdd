@@ -28,6 +28,24 @@ export class CommonFunctions {
         await this.page.getByTestId(testIDLocator).click();
     }
 
+    async clickButtonOnMultipleProducts(products: string[]) {
+        for (const product of products) {
+            await this.clickButtonOnOneProduct(product);
+        }
+    }
+
+    async clickButtonOnOneProduct(product: string) {
+        await this.page
+            .getByTestId(locators.ProductsPage.productTID)
+            .filter({
+                has: this.page
+                    .getByTestId(locators.ProductsPage.productNameTID)
+                    .filter({ hasText: product }),
+            })
+            .getByRole("button")
+            .click();
+    }
+
     async validateScreenshot(testName: string) {
         const isHeadless = this.page.context().browser()?.isConnected();
 

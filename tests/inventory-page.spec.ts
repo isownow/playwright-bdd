@@ -104,10 +104,12 @@ users.forEach((user) => {
                 inventory,
             }) => {
                 // Add one product to the cart
-                await inventory.addOneProductToCart(allProducts.products[0]);
+                await inventory.clickButtonOnOneProduct(
+                    allProducts.products[0],
+                );
 
                 // Get the text of the button
-                const buttonText = await inventory.getAddToCartButtonText(
+                const buttonText = await inventory.getButtonTextOfProduct(
                     allProducts.products[0],
                 );
 

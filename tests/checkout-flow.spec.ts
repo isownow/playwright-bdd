@@ -85,7 +85,7 @@ test.describe.parallel("Checkout Process", () => {
                 );
 
                 // Adding products to the cart
-                await inventory.addProductsToCart(products);
+                await inventory.clickButtonOnMultipleProducts(products);
 
                 // Check whether the cart badge is visible
                 inventory.isCartBadgeVisible();

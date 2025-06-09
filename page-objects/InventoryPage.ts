@@ -17,33 +17,7 @@ export class InventoryPage extends CommonFunctions {
             .selectOption(option);
     }
 
-    async addProductsToCart(products: string[]) {
-        for (const product of products) {
-            await this.page
-                .getByTestId(locators.ProductsPage.productTID)
-                .filter({
-                    has: this.page
-                        .getByTestId(locators.ProductsPage.productNameTID)
-                        .filter({ hasText: product }),
-                })
-                .getByRole("button")
-                .click();
-        }
-    }
-
-    async addOneProductToCart(product: string) {
-        await this.page
-            .getByTestId(locators.ProductsPage.productTID)
-            .filter({
-                has: this.page
-                    .getByTestId(locators.ProductsPage.productNameTID)
-                    .filter({ hasText: product }),
-            })
-            .getByRole("button")
-            .click();
-    }
-
-    async getAddToCartButtonText(product: string) {
+    async getButtonTextOfProduct(product: string) {
         return await this.page
             .getByTestId(locators.ProductsPage.productTID)
             .filter({
